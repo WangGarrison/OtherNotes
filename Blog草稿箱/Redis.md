@@ -1041,14 +1041,22 @@ redis使用的过期键值删除策略是：惰性删除加上定期删除，两
 
 内存满了，下一次再插入的时候，就要淘汰掉一些已有的
 
-- 1、noeviction：内存满了返回错误，不淘汰任何键
-- 2、allkeys-lru：所有键通过LRU算法淘汰
-- 3、volatile-lru：首先从设置了过期时间的键中使用LRU算法淘汰
-- 4、allkeys-random：从所有键中随机删除
-- 5、volatile-random：从过期键的集合中随机删除
-- 6、volatile-ttl：淘汰马上要过期的键
-- 7、volatile-lfu：过期键中淘汰使用频率最少的键
-- 8、allkeys-lfu：从所有键中淘汰使用频率最少的键
+检测易失数据（可能会过期的数据集server.db[i].expires ）
+
+- ① volatile-lru：挑选最近最少使用的数据淘汰
+- ② volatile-lfu：挑选最近使用次数最少的数据淘汰
+- ③ volatile-ttl：挑选将要过期的数据淘汰
+- ④ volatile-random：任意选择数据淘汰
+
+检测全库数据（所有数据集server.db[i].dict ）
+
+- ⑤ allkeys-lru：挑选最近最少使用的数据淘汰
+- ⑥ allkeys-lfu：挑选最近使用次数最少的数据淘汰
+- ⑦ allkeys-random：任意选择数据淘汰
+
+放弃数据驱逐
+
+- ⑧ no-enviction（驱逐）：禁止驱逐数据（redis4.0中默认策略），会引发错误OOM（Out Of Memory）  
 
 **LRU**：Least Recently Used，最近最久未使用页面置换算法，如果数据最近被访问过，那么将来被访问的几率也更高，选择最近最久未使用的页面予以淘汰
 
